@@ -17,7 +17,8 @@
 use aleo_account::*;
 use aleo_record::*;
 
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaChaRng;
 use snarkvm_algorithms::{CommitmentScheme, CRH};
 use snarkvm_dpc::{
     base_dpc::instantiated::{Components, ProgramVerificationKeyCRH, SerialNumberNonce as SerialNumberNonceCRH},
@@ -32,7 +33,8 @@ pub(crate) const ITERATIONS: usize = 5;
 
 #[test]
 fn test_owner_string() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
+
     let private_key = PrivateKey::new(rng).unwrap();
     let owner = Address::from(&private_key).unwrap();
 
@@ -125,7 +127,7 @@ fn test_dummy_must_be_zero() {
 
 #[test]
 fn test_derive_value() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -171,7 +173,7 @@ fn test_derive_value() {
 
 #[test]
 fn test_derive_value_fail() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -217,7 +219,7 @@ fn test_derive_value_fail() {
 
 #[test]
 fn test_derive_is_dummy() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -264,7 +266,7 @@ fn test_derive_is_dummy() {
 
 #[test]
 fn test_derive_is_dummy_fail() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -311,7 +313,7 @@ fn test_derive_is_dummy_fail() {
 
 #[test]
 fn test_calculate_commitment() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -356,7 +358,7 @@ fn test_calculate_commitment() {
 
 #[test]
 fn test_calculate_commitment_fail() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -402,7 +404,7 @@ fn test_calculate_commitment_fail() {
 
 #[test]
 fn test_calculate_commitment_randomness() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -440,7 +442,7 @@ fn test_calculate_commitment_randomness() {
                 .death_program_id(program_snark_vk_bytes.clone())
                 .serial_number_nonce(serial_number_nonce)
                 .commitment_randomness(commitment_randomness)
-                .calculate_commitment::<StdRng>(None)
+                .calculate_commitment::<ChaChaRng>(None)
                 .build();
 
             assert!(given_record.is_ok());
@@ -450,7 +452,7 @@ fn test_calculate_commitment_randomness() {
 
 #[test]
 fn test_calculate_commitment_randomness_fail() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
@@ -486,7 +488,7 @@ fn test_calculate_commitment_randomness_fail() {
                 .birth_program_id(program_snark_vk_bytes.clone())
                 .death_program_id(program_snark_vk_bytes.clone())
                 .serial_number_nonce(serial_number_nonce)
-                .calculate_commitment::<StdRng>(None)
+                .calculate_commitment::<ChaChaRng>(None)
                 .build();
 
             assert!(given_record.is_err());

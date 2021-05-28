@@ -15,11 +15,13 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use aleo_record::*;
-use rand::{rngs::StdRng, SeedableRng};
+
+use rand::SeedableRng;
+use rand_chacha::ChaChaRng;
 
 #[test]
 fn test_build_dummy_record() {
-    let rng = &mut StdRng::from_entropy();
+    let rng = &mut ChaChaRng::seed_from_u64(1231275789u64);
     let r = Record::dummy(rng).unwrap();
 
     println!("{}", r);

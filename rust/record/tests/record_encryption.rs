@@ -16,7 +16,8 @@
 use aleo_account::*;
 use aleo_record::*;
 
-use rand::{rngs::StdRng, Rng, SeedableRng};
+use rand::{Rng, SeedableRng};
+use rand_chacha::ChaChaRng;
 use snarkvm_algorithms::traits::CRH;
 use snarkvm_dpc::{
     base_dpc::instantiated::{Components, ProgramVerificationKeyCRH, SerialNumberNonce as SerialNumberNonceCRH},
@@ -29,7 +30,7 @@ pub(crate) const ITERATIONS: usize = 5;
 
 #[test]
 fn test_record_encryption() {
-    let mut rng = &mut StdRng::from_entropy();
+    let mut rng = &mut ChaChaRng::seed_from_u64(123456789u64);
 
     for _ in 0..ITERATIONS {
         // Load system parameters for the ledger, commitment schemes, CRH, and the
