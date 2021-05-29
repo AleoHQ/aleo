@@ -81,7 +81,9 @@ dependencies = [
  "aleo-account",
  "aleo-record",
  "getrandom 0.2.2",
+ "hex",
  "rand 0.8.3",
+ "snarkvm-utilities",
  "wasm-bindgen",
  "wasm-bindgen-test",
 ]

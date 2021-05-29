@@ -16,6 +16,7 @@
 
 use aleo_account::{AddressError, PrivateKeyError, ViewKeyError};
 
+use hex::FromHexError;
 use snarkvm_algorithms::{CRHError, CommitmentError, EncryptionError};
 use snarkvm_dpc::DPCError;
 
@@ -47,6 +48,9 @@ pub enum RecordError {
 
     #[error("{}", _0)]
     EncryptionError(#[from] EncryptionError),
+
+    #[error("{}", _0)]
+    FromHexError(#[from] FromHexError),
 
     #[error("Attempted to build a record with an invalid commitment. Try `calculate_commitment()`")]
     InvalidCommitment,

@@ -33,6 +33,7 @@ use snarkvm_utilities::{read_variable_length_integer, to_bytes, variable_length_
 use std::{
     fmt,
     io::{Read, Result as IoResult, Write},
+    str::FromStr,
 };
 
 pub type SerialNumber = <<Components as DPCComponents>::AccountSignature as SignatureScheme>::PublicKey;
@@ -229,6 +230,16 @@ impl FromBytes for Record {
             commitment,
             commitment_randomness,
         })
+    }
+}
+
+impl FromStr for Record {
+    type Err = RecordError;
+
+    fn from_str(record: &str) -> Result<Self, Self::Err> {
+        let record = hex::decode(record)?;
+
+        Ok(Self::read(&record[..])?)
     }
 }
 

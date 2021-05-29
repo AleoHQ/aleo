@@ -27,6 +27,7 @@ use snarkvm_dpc::{
     SystemParameters,
 };
 use snarkvm_utilities::{to_bytes, FromBytes, ToBytes};
+use std::str::FromStr;
 
 pub struct EncryptedRecord(Vec<u8>);
 
@@ -79,6 +80,16 @@ impl Record {
         record_native.write(&mut record_bytes)?;
 
         Ok(Record::read(&record_bytes[..])?)
+    }
+}
+
+impl FromStr for EncryptedRecord {
+    type Err = RecordError;
+
+    fn from_str(encrypted_record: &str) -> Result<Self, Self::Err> {
+        let encrypted_record = hex::decode(encrypted_record)?;
+
+        Ok(Self::new(encrypted_record))
     }
 }
 
