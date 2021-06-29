@@ -13,9 +13,11 @@ edition = "2018"
 
 [dependencies.aleo-account]
 path = "../account"
+version = "0.2.0"
 
 [dependencies.aleo-network]
 path = "../network"
+version = "0.2.0"
 
 [dependencies.snarkvm-algorithms]
 version = "0.5.5"

@@ -15,16 +15,17 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use aleo_account::{Address, PrivateKey, ViewKey};
+use aleo_network::Network;
 
 use rand::{rngs::StdRng, SeedableRng};
 use std::str::FromStr;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub struct Account {
-    pub(crate) private_key: PrivateKey,
-    pub(crate) view_key: ViewKey,
-    pub(crate) address: Address,
+pub struct Account<N: Network> {
+    pub(crate) private_key: PrivateKey<N>,
+    pub(crate) view_key: ViewKey<N>,
+    pub(crate) address: Address<N>,
 }
 
 #[wasm_bindgen]
@@ -33,9 +34,9 @@ impl Account {
     pub fn new() -> Self {
         // pub fn new() -> Result<Self, JsValue> {
         let rng = &mut StdRng::from_entropy();
-        let private_key = PrivateKey::new(rng).unwrap();
-        let view_key = ViewKey::from(&private_key).unwrap();
-        let address = Address::from(&private_key).unwrap();
+        let private_key = PrivateKey::<N>::new(rng).unwrap();
+        let view_key = ViewKey::<N>::from(&private_key).unwrap();
+        let address = Address::<N>::from(&private_key).unwrap();
         Self {
             private_key,
             view_key,
@@ -45,9 +46,9 @@ impl Account {
 
     #[wasm_bindgen]
     pub fn from_private_key(private_key: &str) -> Self {
-        let private_key = PrivateKey::from_str(private_key).unwrap();
-        let view_key = ViewKey::from(&private_key).unwrap();
-        let address = Address::from(&private_key).unwrap();
+        let private_key = PrivateKey::<N>::from_str(private_key).unwrap();
+        let view_key = ViewKey::<N>::from(&private_key).unwrap();
+        let address = Address::<N>::from(&private_key).unwrap();
         Self {
             private_key,
             view_key,
@@ -74,6 +75,7 @@ impl Account {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use aleo_network::Testnet1;
 
     use wasm_bindgen_test::*;
 
@@ -83,7 +85,7 @@ mod tests {
         let given_view_key = "AViewKey1m8gvywHKHKfUzZiLiLoHedcdHEjKwo5TWo6efz8gK7wF";
         let given_address = "aleo1faksgtpmculyzt6tgaq26fe4fgdjtwualyljjvfn2q6k42ydegzspfz9uh";
 
-        let account = Account::from_private_key(given_private_key);
+        let account = Account::<Testnet1>::from_private_key(given_private_key);
 
         println!("{} == {}", given_private_key, account.private_key.to_string());
         assert_eq!(given_private_key, account.private_key.to_string());
@@ -99,7 +101,7 @@ mod tests {
     pub fn to_private_key_test() {
         let given_private_key = "APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn";
 
-        let account = Account::from_private_key(given_private_key);
+        let account = Account::<Testnet1>::from_private_key(given_private_key);
 
         println!("{} == {}", given_private_key, account.to_private_key());
         assert_eq!(given_private_key, account.to_private_key());
@@ -110,7 +112,7 @@ mod tests {
         let given_private_key = "APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn";
         let given_view_key = "AViewKey1m8gvywHKHKfUzZiLiLoHedcdHEjKwo5TWo6efz8gK7wF";
 
-        let account = Account::from_private_key(given_private_key);
+        let account = Account::<Testnet1>::from_private_key(given_private_key);
 
         println!("{} == {}", given_view_key, account.to_view_key());
         assert_eq!(given_view_key, account.to_view_key());
@@ -121,7 +123,7 @@ mod tests {
         let given_private_key = "APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn";
         let given_address = "aleo1faksgtpmculyzt6tgaq26fe4fgdjtwualyljjvfn2q6k42ydegzspfz9uh";
 
-        let account = Account::from_private_key(given_private_key);
+        let account = Account::<Testnet1>::from_private_key(given_private_key);
 
         println!("{} == {}", given_address, account.to_address());
         assert_eq!(given_address, account.to_address());

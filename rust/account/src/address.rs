@@ -19,11 +19,12 @@ use crate::{
     AddressError,
     PrivateKey,
 };
+use aleo_network::Network;
 
 use snarkvm_algorithms::traits::SignatureScheme;
 use snarkvm_dpc::{
     account::AccountAddress,
-    testnet1::{instantiated::Components, parameters::SystemParameters},
+    testnet1::{parameters::SystemParameters},
 };
 use snarkvm_utilities::bytes::{FromBytes, ToBytes};
 
@@ -34,14 +35,14 @@ use std::{
 };
 
 #[derive(Default, Clone, Debug, PartialEq, Eq)]
-pub struct Address {
-    pub address: AccountAddress<Components>,
+pub struct Address<N: Network> {
+    pub address: AccountAddress<N::Components>,
 }
 
-impl Address {
-    pub fn from(private_key: &PrivateKey) -> Result<Self, AddressError> {
-        let parameters = SystemParameters::<Components>::load()?;
-        let address = AccountAddress::<Components>::from_private_key(
+impl<N: Network> Address<N> {
+    pub fn from(private_key: &PrivateKey<N>) -> Result<Self, AddressError> {
+        let parameters = SystemParameters::<N::Components>::load()?;
+        let address = AccountAddress::<N::Components>::from_private_key(
             &parameters.account_signature,
             &parameters.account_commitment,
             &parameters.account_encryption,
@@ -50,9 +51,9 @@ impl Address {
         Ok(Self { address })
     }
 
-    pub fn from_view_key(view_key: &ViewKey) -> Result<Self, AddressError> {
-        let parameters = SystemParameters::<Components>::load()?;
-        let address = AccountAddress::<Components>::from_view_key(&parameters.account_encryption, &view_key.view_key)?;
+    pub fn from_view_key(view_key: &ViewKey<N>) -> Result<Self, AddressError> {
+        let parameters = SystemParameters::<N::Components>::load()?;
+        let address = AccountAddress::<N::Components>::from_view_key(&parameters.account_encryption, &view_key.view_key)?;
         Ok(Self { address })
     }
 
@@ -64,8 +65,8 @@ impl Address {
 
     /// Verify a signature signed by the view key
     /// Returns `true` if the signature is verified correctly. Otherwise, returns `false`.
-    pub fn verify(&self, message: &[u8], signature: &Signature) -> Result<bool, AddressError> {
-        let parameters = SystemParameters::<Components>::load()?;
+    pub fn verify(&self, message: &[u8], signature: &Signature<N>) -> Result<bool, AddressError> {
+        let parameters = SystemParameters::<N::Components>::load()?;
 
         Ok(parameters
             .account_encryption
@@ -73,34 +74,34 @@ impl Address {
     }
 }
 
-impl FromStr for Address {
+impl<N: Network> FromStr for Address<N> {
     type Err = AddressError;
 
     fn from_str(address: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            address: AccountAddress::<Components>::from_str(address)?,
+            address: AccountAddress::<N::Components>::from_str(address)?,
         })
     }
 }
 
-impl fmt::Display for Address {
+impl<N: Network> fmt::Display for Address<N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.address.to_string())
     }
 }
 
-impl ToBytes for Address {
+impl<N: Network> ToBytes for Address<N> {
     fn write<W: Write>(&self, mut writer: W) -> IoResult<()> {
         self.address.write(&mut writer)
     }
 }
 
-impl FromBytes for Address {
+impl<N: Network> FromBytes for Address<N> {
     /// Reads in an account address buffer.
     #[inline]
     fn read<R: Read>(mut reader: R) -> IoResult<Self> {
         Ok(Self {
-            address: AccountAddress::<Components>::read(&mut reader)?,
+            address: AccountAddress::<N::Components>::read(&mut reader)?,
         })
     }
 }

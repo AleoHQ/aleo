@@ -15,6 +15,7 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{Address, PrivateKey, ViewKey};
+use aleo_network::Testnet1;
 
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaChaRng;
@@ -23,7 +24,7 @@ use std::str::FromStr;
 #[test]
 pub fn private_key_test() {
     let rng = &mut ChaChaRng::seed_from_u64(1231275789u64);
-    let private_key = PrivateKey::new(rng);
+    let private_key = PrivateKey::<Testnet1>::new(rng);
     assert!(private_key.is_ok());
 
     let expected_private_key = "APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn";
@@ -35,8 +36,8 @@ pub fn private_key_test() {
 
 #[test]
 pub fn view_key_test() {
-    let private_key = PrivateKey::from_str("APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn").unwrap();
-    let view_key = ViewKey::from(&private_key);
+    let private_key = PrivateKey::<Testnet1>::from_str("APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn").unwrap();
+    let view_key = ViewKey::<Testnet1>::from(&private_key);
     assert!(view_key.is_ok());
 
     let expected_view_key = "AViewKey1m8gvywHKHKfUzZiLiLoHedcdHEjKwo5TWo6efz8gK7wF";
@@ -48,8 +49,8 @@ pub fn view_key_test() {
 
 #[test]
 pub fn address_test() {
-    let private_key = PrivateKey::from_str("APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn").unwrap();
-    let address = Address::from(&private_key);
+    let private_key = PrivateKey::<Testnet1>::from_str("APrivateKey1tvv5YV1dipNiku2My8jMkqpqCyYKvR5Jq4y2mtjw7s77Zpn").unwrap();
+    let address = Address::<Testnet1>::from(&private_key);
     assert!(address.is_ok());
 
     let expected_address = "aleo1faksgtpmculyzt6tgaq26fe4fgdjtwualyljjvfn2q6k42ydegzspfz9uh";
@@ -62,7 +63,7 @@ pub fn address_test() {
 #[test]
 pub fn view_key_signature_test() {
     let rng = &mut ChaChaRng::seed_from_u64(1231275789u64);
-    let private_key = PrivateKey::new(rng);
+    let private_key = PrivateKey::<Testnet1>::new(rng);
     assert!(private_key.is_ok());
 
     let view_key = ViewKey::from(&private_key.unwrap());
@@ -83,7 +84,7 @@ pub fn view_key_signature_test() {
 #[test]
 pub fn view_key_signature_verification_test() {
     let rng = &mut ChaChaRng::seed_from_u64(1231275789u64);
-    let private_key = PrivateKey::new(rng);
+    let private_key = PrivateKey::<Testnet1>::new(rng);
     assert!(private_key.is_ok());
 
     let view_key = ViewKey::from(&private_key.unwrap()).unwrap();
@@ -102,7 +103,7 @@ pub fn view_key_signature_verification_test() {
 #[test]
 pub fn view_key_signature_failed_verification_test() {
     let rng = &mut ChaChaRng::seed_from_u64(1231275789u64);
-    let private_key = PrivateKey::new(rng);
+    let private_key = PrivateKey::<Testnet1>::new(rng);
     assert!(private_key.is_ok());
 
     let view_key = ViewKey::from(&private_key.unwrap()).unwrap();

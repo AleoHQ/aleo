@@ -15,11 +15,12 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::{PrivateKey, ViewKeyError};
+use aleo_network::Network;
 
 use snarkvm_algorithms::traits::SignatureScheme;
 use snarkvm_dpc::{
     account::AccountViewKey,
-    testnet1::{instantiated::Components, parameters::SystemParameters},
+    testnet1::{parameters::SystemParameters},
     traits::DPCComponents,
 };
 use snarkvm_utilities::{
@@ -31,14 +32,14 @@ use rand::{CryptoRng, Rng};
 use std::{fmt, str::FromStr};
 
 #[derive(Debug)]
-pub struct ViewKey {
-    pub view_key: AccountViewKey<Components>,
+pub struct ViewKey<N: Network> {
+    pub view_key: AccountViewKey<N::Components>,
 }
 
-impl ViewKey {
-    pub fn from(private_key: &PrivateKey) -> Result<Self, ViewKeyError> {
-        let parameters = SystemParameters::<Components>::load()?;
-        let view_key = AccountViewKey::<Components>::from_private_key(
+impl<N: Network> ViewKey<N> {
+    pub fn from(private_key: &PrivateKey<N>) -> Result<Self, ViewKeyError> {
+        let parameters = SystemParameters::<N::Components>::load()?;
+        let view_key = AccountViewKey::<N::Components>::from_private_key(
             &parameters.account_signature,
             &parameters.account_commitment,
             &private_key.private_key,
@@ -47,8 +48,8 @@ impl ViewKey {
     }
 
     /// Sign message with the view key.
-    pub fn sign<R: Rng + CryptoRng>(&self, message: &[u8], rng: &mut R) -> Result<Signature, ViewKeyError> {
-        let parameters = SystemParameters::<Components>::load()?;
+    pub fn sign<R: Rng + CryptoRng>(&self, message: &[u8], rng: &mut R) -> Result<Signature<N>, ViewKeyError> {
+        let parameters = SystemParameters::<N::Components>::load()?;
 
         let signature = parameters
             .account_encryption
@@ -58,38 +59,38 @@ impl ViewKey {
     }
 }
 
-impl FromStr for ViewKey {
+impl<N: Network> FromStr for ViewKey<N> {
     type Err = ViewKeyError;
 
     fn from_str(view_key: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            view_key: AccountViewKey::<Components>::from_str(view_key)?,
+            view_key: AccountViewKey::<N::Components>::from_str(view_key)?,
         })
     }
 }
 
-impl fmt::Display for ViewKey {
+impl<N: Network> fmt::Display for ViewKey<N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.view_key.to_string())
     }
 }
 
 /// An account view key signature.
-pub struct Signature(pub <<Components as DPCComponents>::AccountEncryption as SignatureScheme>::Output);
+pub struct Signature<N: Network>(pub <<N::Components as DPCComponents>::AccountEncryption as SignatureScheme>::Output);
 
-impl FromStr for Signature {
+impl<N: Network> FromStr for Signature<N> {
     type Err = ViewKeyError;
 
     fn from_str(signature: &str) -> Result<Self, Self::Err> {
         let signature_bytes = hex::decode(signature)?;
-        let signature: <<Components as DPCComponents>::AccountEncryption as SignatureScheme>::Output =
+        let signature: <<N::Components as DPCComponents>::AccountEncryption as SignatureScheme>::Output =
             FromBytes::read(&signature_bytes[..])?;
 
         Ok(Self(signature))
     }
 }
 
-impl fmt::Display for Signature {
+impl<N: Network> fmt::Display for Signature<N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,

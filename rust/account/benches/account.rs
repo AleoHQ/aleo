@@ -15,6 +15,7 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use aleo_account::{Address, PrivateKey, ViewKey};
+use aleo_network::Testnet1;
 
 #[macro_use]
 extern crate bencher;
@@ -29,27 +30,27 @@ fn account_private_key(bench: &mut Bencher) {
     let rng = &mut ChaChaRng::seed_from_u64(SEED);
 
     bench.iter(|| {
-        let _private_key = PrivateKey::new(rng).unwrap();
+        let _private_key = PrivateKey::<Testnet1>::new(rng).unwrap();
     });
 }
 
 fn account_view_key(bench: &mut Bencher) {
     let rng = &mut ChaChaRng::seed_from_u64(SEED);
 
-    let private_key = PrivateKey::new(rng).unwrap();
+    let private_key = PrivateKey::<Testnet1>::new(rng).unwrap();
 
     bench.iter(|| {
-        let _view_key = ViewKey::from(&private_key).unwrap();
+        let _view_key = ViewKey::<Testnet1>::from(&private_key).unwrap();
     });
 }
 
 fn account_address(bench: &mut Bencher) {
     let rng = &mut ChaChaRng::seed_from_u64(SEED);
 
-    let private_key = PrivateKey::new(rng).unwrap();
+    let private_key = PrivateKey::<Testnet1>::new(rng).unwrap();
 
     bench.iter(|| {
-        let _address = Address::from(&private_key).unwrap();
+        let _address = Address::<Testnet1>::from(&private_key).unwrap();
     });
 }
 

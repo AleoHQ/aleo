@@ -15,40 +15,41 @@
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
 use crate::PrivateKeyError;
+use aleo_network::Network;
 
 use snarkvm_dpc::{
     account::AccountPrivateKey,
-    testnet1::{instantiated::Components, parameters::SystemParameters},
+    testnet1::{parameters::SystemParameters},
 };
 
 use rand::{CryptoRng, Rng};
 use std::{fmt, str::FromStr};
 
 #[derive(Debug)]
-pub struct PrivateKey {
-    pub private_key: AccountPrivateKey<Components>,
+pub struct PrivateKey<N: Network> {
+    pub private_key: AccountPrivateKey<N::Components>,
 }
 
-impl PrivateKey {
+impl<N: Network> PrivateKey<N> {
     pub fn new<R: Rng + CryptoRng>(rng: &mut R) -> Result<Self, PrivateKeyError> {
-        let parameters = SystemParameters::<Components>::load()?;
+        let parameters = SystemParameters::<N::Components>::load()?;
         let private_key =
-            AccountPrivateKey::<Components>::new(&parameters.account_signature, &parameters.account_commitment, rng)?;
+            AccountPrivateKey::<N::Components>::new(&parameters.account_signature, &parameters.account_commitment, rng)?;
         Ok(Self { private_key })
     }
 }
 
-impl FromStr for PrivateKey {
+impl<N: Network> FromStr for PrivateKey<N> {
     type Err = PrivateKeyError;
 
     fn from_str(private_key: &str) -> Result<Self, Self::Err> {
         Ok(Self {
-            private_key: AccountPrivateKey::<Components>::from_str(private_key)?,
+            private_key: AccountPrivateKey::<N::Components>::from_str(private_key)?,
         })
     }
 }
 
-impl fmt::Display for PrivateKey {
+impl<N: Network> fmt::Display for PrivateKey<N> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.private_key.to_string())
     }
