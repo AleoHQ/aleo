@@ -16,9 +16,9 @@
 
 use crate::{Record, RecordError};
 use aleo_account::Address;
-use aleo_environment::Environment;
+use aleo_network::Network;
 
-use snarkvm_algorithms::traits::{CommitmentScheme, CRH};
+use snarkvm_algorithms::prelude::*;
 use snarkvm_dpc::{
     testnet1::parameters::{NoopProgramSNARKParameters, SystemParameters},
     DPCComponents,
@@ -31,24 +31,24 @@ use rand::{CryptoRng, Rng};
 
 /// A builder struct for the record data type.
 #[derive(Derivative)]
-#[derivative(Default(bound = "E: Environment"), Debug(bound = "E: Environment"))]
-pub struct RecordBuilder<E: Environment> {
+#[derivative(Default(bound = "N: Network"), Debug(bound = "N: Network"))]
+pub struct RecordBuilder<N: Network> {
     pub(crate) owner: OnceCell<Address>,
     pub(crate) is_dummy: OnceCell<bool>,
     pub(crate) value: OnceCell<u64>,
-    pub(crate) payload: OnceCell<<Record<E> as RecordScheme>::Payload>,
+    pub(crate) payload: OnceCell<<Record<N> as RecordScheme>::Payload>,
 
     pub(crate) birth_program_id: OnceCell<Vec<u8>>,
     pub(crate) death_program_id: OnceCell<Vec<u8>>,
 
-    pub(crate) serial_number_nonce: OnceCell<<Record<E> as RecordScheme>::SerialNumberNonce>,
-    pub(crate) commitment: OnceCell<<Record<E> as RecordScheme>::Commitment>,
-    pub(crate) commitment_randomness: OnceCell<<Record<E> as RecordScheme>::CommitmentRandomness>,
+    pub(crate) serial_number_nonce: OnceCell<<Record<N> as RecordScheme>::SerialNumberNonce>,
+    pub(crate) commitment: OnceCell<<Record<N> as RecordScheme>::Commitment>,
+    pub(crate) commitment_randomness: OnceCell<<Record<N> as RecordScheme>::CommitmentRandomness>,
 
     pub(crate) errors: Vec<RecordError>,
 }
 
-impl<E: Environment> RecordBuilder<E> {
+impl<N: Network> RecordBuilder<N> {
     ///
     /// Returns a new record builder.
     /// To return a record and consume the record builder, call the `.build()` method.
@@ -61,10 +61,9 @@ impl<E: Environment> RecordBuilder<E> {
     /// Returns a new record builder and sets field `owner: Address`.
     ///
     pub fn owner<A: Into<Address>>(mut self, owner: A) -> Self {
-        let owner = owner.into();
-        let owner_string = format!("owner: {}", owner);
-        if self.owner.set(owner).is_err() {
-            self.errors.push(RecordError::DuplicateArgument(owner_string));
+        if let Err(owner) = self.owner.set(owner.into()) {
+            self.errors
+                .push(RecordError::DuplicateArgument(format!("owner: {}", owner)));
         }
         self
     }
@@ -73,7 +72,7 @@ impl<E: Environment> RecordBuilder<E> {
     /// Returns a new record builder and sets field `value: u64`.
     ///
     pub fn value(mut self, value: u64) -> Self {
-        if self.value.set(value).is_err() {
+        if let Err(value) = self.value.set(value) {
             self.errors
                 .push(RecordError::DuplicateArgument(format!("value: {}", value)))
         }
@@ -83,11 +82,12 @@ impl<E: Environment> RecordBuilder<E> {
     ///
     /// Returns a new record builder and sets field `payload: Payload`.
     ///
-    pub fn payload(mut self, payload: <Record<E> as RecordScheme>::Payload) -> Self {
-        let payload_string = hex::encode(&to_bytes![payload].unwrap()[..]);
-        if self.payload.set(payload).is_err() {
-            self.errors
-                .push(RecordError::DuplicateArgument(format!("payload: {}", payload_string)))
+    pub fn payload(mut self, payload: <Record<N> as RecordScheme>::Payload) -> Self {
+        if let Err(payload) = self.payload.set(payload) {
+            self.errors.push(RecordError::DuplicateArgument(format!(
+                "payload: {}",
+                hex::encode(&to_bytes![payload].unwrap()[..])
+            )))
         }
         self
     }
@@ -96,11 +96,10 @@ impl<E: Environment> RecordBuilder<E> {
     /// Returns a new record builder and sets field `birth_program_id: Vec<u8>`.
     ///
     pub fn birth_program_id(mut self, birth_program_id: Vec<u8>) -> Self {
-        let birth_program_id_string = hex::encode(&to_bytes![birth_program_id].unwrap()[..]);
-        if self.birth_program_id.set(birth_program_id).is_err() {
+        if let Err(birth_program_id) = self.birth_program_id.set(birth_program_id) {
             self.errors.push(RecordError::DuplicateArgument(format!(
                 "birth_program_id: {}",
-                birth_program_id_string
+                hex::encode(&to_bytes![birth_program_id].unwrap()[..])
             )))
         }
         self
@@ -110,11 +109,10 @@ impl<E: Environment> RecordBuilder<E> {
     /// Returns a new record builder and sets field `death_program_id: Vec<u8>`.
     ///
     pub fn death_program_id(mut self, death_program_id: Vec<u8>) -> Self {
-        let death_program_id_string = hex::encode(&to_bytes![death_program_id].unwrap()[..]);
-        if self.death_program_id.set(death_program_id).is_err() {
+        if let Err(death_program_id) = self.death_program_id.set(death_program_id) {
             self.errors.push(RecordError::DuplicateArgument(format!(
                 "death_program_id: {}",
-                death_program_id_string
+                hex::encode(&to_bytes![death_program_id].unwrap()[..])
             )))
         }
         self
@@ -123,8 +121,8 @@ impl<E: Environment> RecordBuilder<E> {
     ///
     /// Returns a new record builder and sets field `serial_number_nonce: SerialNumberNonce`.
     ///
-    pub fn serial_number_nonce(mut self, serial_number_nonce: <Record<E> as RecordScheme>::SerialNumberNonce) -> Self {
-        if self.serial_number_nonce.set(serial_number_nonce).is_err() {
+    pub fn serial_number_nonce(mut self, serial_number_nonce: <Record<N> as RecordScheme>::SerialNumberNonce) -> Self {
+        if let Err(serial_number_nonce) = self.serial_number_nonce.set(serial_number_nonce) {
             self.errors.push(RecordError::DuplicateArgument(format!(
                 "serial_number_nonce: {}",
                 hex::encode(&to_bytes![serial_number_nonce].unwrap()[..])
@@ -138,8 +136,8 @@ impl<E: Environment> RecordBuilder<E> {
     /// from the given inputs.
     ///
     pub fn calculate_serial_number_nonce<R: Rng>(
-        mut self,
-        parameters: SystemParameters<E::Components>,
+        self,
+        parameters: SystemParameters<N::Components>,
         index: u8,
         joint_serial_numbers: Vec<u8>,
         rng: &mut R,
@@ -149,7 +147,7 @@ impl<E: Environment> RecordBuilder<E> {
 
         let crh_input = to_bytes![index, sn_randomness, joint_serial_numbers].unwrap();
         let sn_nonce =
-            <E::Components as DPCComponents>::SerialNumberNonceCRH::hash(&parameters.serial_number_nonce, &crh_input)
+            <N::Components as DPCComponents>::SerialNumberNonceCRH::hash(&parameters.serial_number_nonce, &crh_input)
                 .unwrap();
 
         self.serial_number_nonce(sn_nonce)
@@ -158,12 +156,11 @@ impl<E: Environment> RecordBuilder<E> {
     ///
     /// Returns a new record builder and sets field `commitment: RecordCommitment`.
     ///
-    pub fn commitment(mut self, commitment: <Record<E> as RecordScheme>::Commitment) -> Self {
-        let commitment_string = hex::encode(&to_bytes![commitment].unwrap()[..]);
-        if self.commitment.set(commitment).is_err() {
+    pub fn commitment(mut self, commitment: <Record<N> as RecordScheme>::Commitment) -> Self {
+        if let Err(commitment) = self.commitment.set(commitment) {
             self.errors.push(RecordError::DuplicateArgument(format!(
                 "commitment: {}",
-                commitment_string
+                hex::encode(&to_bytes![commitment].unwrap()[..])
             )))
         }
         self
@@ -174,13 +171,12 @@ impl<E: Environment> RecordBuilder<E> {
     ///
     pub fn commitment_randomness(
         mut self,
-        commitment_randomness: <Record<E> as RecordScheme>::CommitmentRandomness,
+        commitment_randomness: <Record<N> as RecordScheme>::CommitmentRandomness,
     ) -> Self {
-        let commitment_randomness_string = hex::encode(&to_bytes![commitment_randomness].unwrap()[..]);
-        if self.commitment_randomness.set(commitment_randomness).is_err() {
+        if let Err(commitment_randomness) = self.commitment_randomness.set(commitment_randomness) {
             self.errors.push(RecordError::DuplicateArgument(format!(
                 "commitment_randomness: {}",
-                commitment_randomness_string
+                hex::encode(&to_bytes![commitment_randomness].unwrap()[..])
             )))
         }
         self
@@ -192,16 +188,16 @@ impl<E: Environment> RecordBuilder<E> {
     pub fn calculate_commitment_randomness<R: Rng + CryptoRng>(self, rng: &mut R) -> Self {
         // Sample new commitment randomness.
         let commitment_randomness =
-            <<E::Components as DPCComponents>::RecordCommitment as CommitmentScheme>::Randomness::rand(rng);
+            <<N::Components as DPCComponents>::RecordCommitment as CommitmentScheme>::Randomness::rand(rng);
 
         self.commitment_randomness(commitment_randomness)
     }
 
     ///
     /// Returns a `Record` and consumes the record builder.
-    /// Returns an error if fields are missing or error are encountered while building.
+    /// Returns an error if fields are missing or errors are encountered while building.
     ///
-    pub fn build(self) -> Result<Record<E>, RecordError> {
+    pub fn build(self) -> Result<Record<N>, RecordError> {
         // Return error.
         if !self.errors.is_empty() {
             // Print out all errors
@@ -251,11 +247,11 @@ impl<E: Environment> RecordBuilder<E> {
         };
 
         // Get noop_program_id.
-        let system_parameters = SystemParameters::<E::Components>::load()?;
-        let program_snark_pp = NoopProgramSNARKParameters::<E::Components>::load()?;
+        let system_parameters = SystemParameters::<N::Components>::load()?;
+        let program_snark_pp = NoopProgramSNARKParameters::<N::Components>::load()?;
 
         let noop_program_id = to_bytes![
-            <E::Components as DPCComponents>::ProgramVerificationKeyCRH::hash(
+            <N::Components as DPCComponents>::ProgramVerificationKeyCRH::hash(
                 &system_parameters.program_verification_key_crh,
                 &to_bytes![program_snark_pp.verification_key].unwrap()
             )
@@ -265,7 +261,7 @@ impl<E: Environment> RecordBuilder<E> {
 
         // Derive is_dummy
         let is_dummy = (*value == 0)
-            && (*payload == <Record<E> as RecordScheme>::Payload::default())
+            && (*payload == <Record<N> as RecordScheme>::Payload::default())
             && (*birth_program_id == noop_program_id)
             && (*death_program_id == noop_program_id);
 
@@ -288,7 +284,7 @@ impl<E: Environment> RecordBuilder<E> {
         .unwrap();
 
         // Derive commitment
-        let commitment = <E::Components as DPCComponents>::RecordCommitment::commit(
+        let commitment = <N::Components as DPCComponents>::RecordCommitment::commit(
             &system_parameters.record_commitment,
             &commitment_input,
             commitment_randomness,

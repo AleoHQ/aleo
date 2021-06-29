@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
+#![allow(clippy::all)]
+
 pub mod account;
 pub use account::*;
 
@@ -22,6 +24,12 @@ pub use address::*;
 
 pub mod record;
 pub use record::*;
+
+pub mod transaction;
+pub use transaction::*;
+
+pub mod transaction_kernel;
+pub use transaction_kernel::*;
 
 pub mod view_key;
 pub use view_key::*;

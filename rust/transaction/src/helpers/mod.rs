@@ -14,13 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with the Aleo library. If not, see <https://www.gnu.org/licenses/>.
 
-pub mod decode;
+pub mod empty_ledger;
+pub use empty_ledger::*;
 
-pub mod decrypt;
+pub mod transaction_kernel;
+pub use transaction_kernel::*;
 
-pub mod encode;
-
-pub mod encrypt;
+pub mod transaction_kernel_builder;
+pub use transaction_kernel_builder::*;
 
 #[cfg(test)]
 mod tests;

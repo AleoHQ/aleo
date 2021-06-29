@@ -17,11 +17,14 @@ crate-type = ["cdylib", "rlib"]
 [dependencies.aleo-account]
 path = "../rust/account"
 
-[dependencies.aleo-environment]
-path = "../rust/environment"
+[dependencies.aleo-network]
+path = "../rust/network"
 
 [dependencies.aleo-record]
 path = "../rust/record"
+
+[dependencies.aleo-transaction]
+path = "../rust/transaction"
 
 [dependencies.snarkvm-dpc]
 version = "0.5.5"
@@ -39,11 +42,19 @@ features = ["js"]
 [dependencies.hex]
 version = "0.4.3"
 
+[dependencies.js-sys]
+version = "0.3.51"
+
 [dependencies.rand]
 version = "0.8"
 
+[dependencies.serde]
+version = "1.0"
+features = ["derive"]
+
 [dependencies.wasm-bindgen]
 version = "0.2.74"
+features = ["serde-serialize"]
 
 [dev-dependencies.snarkvm-algorithms]
 version = "0.5.5"
